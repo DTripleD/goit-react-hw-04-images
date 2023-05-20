@@ -6,7 +6,7 @@ export const Modal = ({ modalClose, largeImageURL, altAtr }) => {
   useEffect(() => {
     const clickEsc = e => {
       if (e.key === 'Escape') {
-        modalClose();
+        modalClose('', '');
       }
     };
 
@@ -17,7 +17,7 @@ export const Modal = ({ modalClose, largeImageURL, altAtr }) => {
 
   const handleClick = event => {
     if (event.target === event.currentTarget) {
-      modalClose();
+      modalClose('', '');
     }
   };
 

@@ -9,7 +9,6 @@ export const App = () => {
   const [modalImg, setModalImg] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
   const [isSeeMore, setIsSeeMore] = useState(false);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
@@ -24,8 +23,7 @@ export const App = () => {
     Images.getImages(input, page)
       .then(({ hits, total }) => {
         if (!hits.length) {
-          setIsEmpty(true);
-          return;
+          throw new Error('Nothing found for your request');
         }
 
         setPhotoList(prevPhotoList => [...prevPhotoList, ...hits]);
@@ -44,7 +42,6 @@ export const App = () => {
     setPage(1);
     setPhotoList([]);
     setIsSeeMore(false);
-    setIsEmpty(false);
     setError(null);
   };
 
@@ -59,8 +56,8 @@ export const App = () => {
   return (
     <AppWrapper>
       <Searchbar onSubmit={onFormSubmit} />
-      {isEmpty ? (
-        <Warning>Oops... Something went wrong</Warning>
+      {error ? (
+        <Warning textAlign="center">Sorry. {error} ... 😭</Warning>
       ) : (
         <ImageGallery photoList={photoList} modalOpen={toggleModal} />
       )}
@@ -74,7 +71,6 @@ export const App = () => {
       )}
       {isSeeMore && <Button onLoadMore={onLoadMore}></Button>}
       {isLoading && <Loader />}
-      {error && <Warning textAlign="center">Sorry. {error} ... 😭</Warning>}
     </AppWrapper>
   );
 };
