@@ -5,8 +5,8 @@ export const Loader = () => {
   return (
     <LoaderWrapper>
       <Bars
-        height="80"
-        width="80"
+        height="50"
+        width="50"
         color="#4fa94d"
         ariaLabel="bars-loading"
         wrapperStyle={{}}

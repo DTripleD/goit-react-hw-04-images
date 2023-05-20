@@ -1,103 +1,80 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { AppWrapper, Warning } from './App.styled';
 import { Searchbar, ImageGallery, Modal, Button, Loader } from 'components';
 import * as Images from '../../services/ApiService';
 
-export class App extends Component {
-  state = {
-    photoList: [],
-    input: '',
-    modalImg: '',
-    isOpen: false,
-    isLoading: false,
-    isEmpty: false,
-    isSeeMore: false,
-    page: 1,
-    error: null,
-  };
+export const App = () => {
+  const [photoList, setPhotoList] = useState([]);
+  const [input, setInput] = useState('');
+  const [modalImg, setModalImg] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const [isSeeMore, setIsSeeMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [altAtr, setAltAtr] = useState('');
 
-  componentDidUpdate(_, prevState) {
-    const { input, page } = this.state;
-
-    if (prevState.input !== input || prevState.page !== page) {
-      this.setState({ isLoading: true });
-      Images.getImages(input, page)
-        .then(({ hits, total }) => {
-          if (!hits.length) {
-            this.setState({
-              isEmpty: true,
-            });
-            return;
-          }
-
-          this.setState(prevState => ({
-            photoList: [...prevState.photoList, ...hits],
-            isSeeMore: page < Math.ceil(total / 12),
-          }));
-        })
-        .catch(error => {
-          this.setState({ error: error.message });
-        })
-        .finally(() => {
-          this.setState({ isLoading: false });
-        });
+  useEffect(() => {
+    if (!input) {
+      return;
     }
-  }
+    setIsSeeMore(false);
+    setIsLoading(true);
+    Images.getImages(input, page)
+      .then(({ hits, total }) => {
+        if (!hits.length) {
+          setIsEmpty(true);
+          return;
+        }
 
-  onFormSubmit = querry => {
-    if (querry === this.state.input) {
+        setPhotoList(prevPhotoList => [...prevPhotoList, ...hits]);
+        setIsSeeMore(() => page < Math.ceil(total / 12));
+      })
+      .catch(error => setError(error.message))
+      .finally(() => setIsLoading(false));
+  }, [input, page]);
+
+  const onFormSubmit = querry => {
+    if (querry === input) {
       alert('Enter a new word');
       return;
     }
-    this.setState({
-      input: querry,
-      page: 1,
-      photoList: [],
-      isSeeMore: false,
-      isEmpty: false,
-      error: null,
-    });
+    setInput(querry);
+    setPage(1);
+    setPhotoList([]);
+    setIsSeeMore(false);
+    setIsEmpty(false);
+    setError(null);
   };
 
-  onLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const onLoadMore = () => setPage(prevPage => prevPage + 1);
+
+  const toggleModal = (largeImageURL, alt) => {
+    setModalImg(largeImageURL);
+    setIsOpen(prevState => !prevState);
+    setAltAtr(alt);
   };
 
-  toggleModal = largeImageURL => {
-    this.setState({
-      modalImg: largeImageURL,
-      isOpen: !this.state.isOpen,
-    });
-  };
+  return (
+    <AppWrapper>
+      <Searchbar onSubmit={onFormSubmit} />
+      {isEmpty ? (
+        <Warning>Oops... Something went wrong</Warning>
+      ) : (
+        <ImageGallery photoList={photoList} modalOpen={toggleModal} />
+      )}
 
-  render() {
-    const {
-      isEmpty,
-      photoList,
-      isSeeMore,
-      isLoading,
-      error,
-      modalImg,
-      isOpen,
-    } = this.state;
-    return (
-      <AppWrapper>
-        <Searchbar onSubmit={this.onFormSubmit} />
-        {isEmpty ? (
-          <Warning>Oops... Something went wrong</Warning>
-        ) : (
-          <ImageGallery photoList={photoList} modalOpen={this.toggleModal} />
-        )}
-
-        {isOpen && (
-          <Modal largeImageURL={modalImg} modalClose={this.toggleModal} />
-        )}
-        {isSeeMore && <Button onLoadMore={this.onLoadMore}></Button>}
-        {isLoading && <Loader />}
-        {error && <Warning textAlign="center">Sorry. {error} ... 😭</Warning>}
-      </AppWrapper>
-    );
-  }
-}
+      {isOpen && (
+        <Modal
+          largeImageURL={modalImg}
+          modalClose={toggleModal}
+          altAtr={altAtr}
+        />
+      )}
+      {isSeeMore && <Button onLoadMore={onLoadMore}></Button>}
+      {isLoading && <Loader />}
+      {error && <Warning textAlign="center">Sorry. {error} ... 😭</Warning>}
+    </AppWrapper>
+  );
+};

@@ -8,13 +8,11 @@ export const ImageGalleryItem = ({
   tag,
 }) => {
   return (
-    <GalletyItem onClick={() => modalOpen(largeImageURL)}>
+    <GalletyItem onClick={() => modalOpen(largeImageURL, tag)}>
       <GalleryItemImage src={webformatURL} alt={tag} />
     </GalletyItem>
   );
 };
-
-// PROPS { id, webformatURL, largeImageURL }
 
 ImageGalleryItem.propTypes = {
   webformatURL: PropTypes.string,
