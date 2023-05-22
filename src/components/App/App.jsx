@@ -18,7 +18,6 @@ export const App = () => {
     if (!input) {
       return;
     }
-    setIsSeeMore(false);
     setIsLoading(true);
     Images.getImages(input, page)
       .then(({ hits, total }) => {
